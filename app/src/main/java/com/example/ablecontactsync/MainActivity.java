@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,23 @@ public class MainActivity extends AppCompatActivity {
     String number;
     TextView progress;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    public boolean isTodaysData(String dt){
+        String ml = dt.substring(18,28);
+        long mls = Long.parseLong(ml)*1000;
+        String d = new Date(mls).toString();
+        String Month = d.substring(4,7);
+        String Date = d.substring(8,10);
+        String Year = d.substring(29,34);
+        String curD = new Date().toString();
+        String curMonth = curD.substring(4,7);
+        String curDate = curD.substring(8,10);
+        String curYear = curD.substring(29,34);
+        if(curDate.equals(Date)&&curMonth.equals(Month)&&curYear.equals(Year)){
+            return  true;
+        }
+        return false;
+    }
 
     public void getData(){
         db.collection("Contacts")
@@ -41,15 +59,22 @@ public class MainActivity extends AppCompatActivity {
                                 Fname = document.get("FirstName").toString();
                                 Lname = document.get("LastName").toString();
                                 number = Objects.requireNonNull(document.get("Number")).toString();
-                                try {
-                                    testBatchInsertion();
-                                } catch (RemoteException | OperationApplicationException e) {
-                                    e.printStackTrace();
+                                String tm = document.get("addedOn").toString();
+
+                                if(isTodaysData(tm)){
+                                    Toast.makeText(MainActivity.this, Fname+"  "+Lname+" Added to Contacts", Toast.LENGTH_SHORT).show();
+                                    try {
+                                        testBatchInsertion();
+                                    } catch (RemoteException | OperationApplicationException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                                 c++;
-                                Toast.makeText(MainActivity.this, c+" Out Of "+ms+" Added", Toast.LENGTH_SHORT).show();
-                                progress.setText(Integer.toString(c)+"  "+Fname);
-                                Toast.makeText(MainActivity.this, Fname+"  "+Lname+" Added to Contacts", Toast.LENGTH_SHORT).show();
+//                                if(c<count){
+//                                    progress.setText(Integer.toString(c)+" Out Of "+ms+" Contacts Synced");
+//                                }else{
+//                                    progress.setText("Sync Completed");
+//                                }
                             }
                         } else {
                             Toast.makeText(MainActivity.this, "Error Getting Data", Toast.LENGTH_SHORT).show();

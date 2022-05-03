@@ -14,22 +14,6 @@
         android:orientation="vertical"
         android:layout_centerInParent="true"
         >
-        <TextView
-            android:id="@+id/con"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="All Contacts"
-            android:layout_gravity="center_horizontal"
-            android:textSize="20sp"
-            />
-        <TextView
-            android:id="@+id/cont"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="All Contacts"
-            android:layout_gravity="center_horizontal"
-            android:textSize="20sp"
-            />
         <Button
             android:id="@+id/sync_btn"
             android:layout_width="wrap_content"
