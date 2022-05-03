@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Able Contact Sync</string>
+    <string name="sync_contact_btn">Sync Contacts</string>
+    <string name="add_all_cont">Add all new contacts</string>
+    <string name="delete_contact_btn">Delete Contacts</string>
+    <string name="delete_all_cont">Delete all contacts older than a month</string>
+
+</resources>
