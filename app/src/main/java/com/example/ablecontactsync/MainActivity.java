@@ -28,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     TextView progress;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    public String getProgress(int n , int all){
+        return Double.toString(((1.0*n)/(1.0*all))*100).substring(0,5);
+    }
     public boolean isTodaysData(String dt){
         String ml = dt.substring(18,28);
         long mls = Long.parseLong(ml)*1000;
@@ -63,18 +66,15 @@ public class MainActivity extends AppCompatActivity {
 
                                 if(isTodaysData(tm)){
                                     Toast.makeText(MainActivity.this, Fname+"  "+Lname+" Added to Contacts", Toast.LENGTH_SHORT).show();
-                                    try {
-                                        testBatchInsertion();
-                                    } catch (RemoteException | OperationApplicationException e) {
-                                        e.printStackTrace();
-                                    }
+//                                    try {
+//                                        testBatchInsertion();
+//                                    } catch (RemoteException | OperationApplicationException e) {
+//                                        e.printStackTrace();
+//                                    }
                                 }
                                 c++;
-//                                if(c<count){
-//                                    progress.setText(Integer.toString(c)+" Out Of "+ms+" Contacts Synced");
-//                                }else{
-//                                    progress.setText("Sync Completed");
-//                                }
+                                progress.setText(getProgress(c,count) + "%");
+                                Toast.makeText(MainActivity.this, getProgress(c,count) + "%", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Toast.makeText(MainActivity.this, "Error Getting Data", Toast.LENGTH_SHORT).show();
