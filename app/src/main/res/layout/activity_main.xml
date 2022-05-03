@@ -29,14 +29,27 @@
         android:layout_gravity="center_horizontal"
         android:textSize="15sp"
         />
-    <TextView
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:textSize="15sp"
-        android:text="Progress"
-        />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            >
+            <TextView
+                android:id="@+id/progressText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textSize="15sp"
+                android:text="@string/progress"
+                />
+            <ProgressBar
+                android:id="@+id/progressbar"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:indeterminateOnly="false"
+                android:progressDrawable="@drawable/custom_progressbar"
+                />
+        </LinearLayout>
     <Button
         android:id="@+id/del_btn"
         android:layout_width="wrap_content"
@@ -44,6 +57,7 @@
         android:layout_marginTop="70dp"
         android:layout_gravity="center_horizontal"
         android:textAllCaps="false"
+        android:backgroundTint="@color/darkBrown"
         android:text="@string/delete_contact_btn"
         />
         <TextView

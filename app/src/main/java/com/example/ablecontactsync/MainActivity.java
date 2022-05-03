@@ -2,6 +2,8 @@ package com.example.ablecontactsync;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.Manifest;
 import android.content.ContentProviderOperation;
 import android.content.OperationApplicationException;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,16 +25,17 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     Button sync_btn,del_btn;
-    String Fname;
-    String Lname;
+    String firstName;
+    String lastName;
     String number;
-    TextView progress;
+    ProgressBar progressBar;
+    int count;
+    int cres;
+    TextView progressText;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    String[] PERMISSIONS;
 
-    public String getProgress(int n , int all){
-        return Double.toString(((1.0*n)/(1.0*all))*100).substring(0,5);
-    }
-    public boolean isTodaysData(String dt){
+    public boolean isTodayData(String dt){
         String ml = dt.substring(18,28);
         long mls = Long.parseLong(ml)*1000;
         String d = new Date(mls).toString();
@@ -42,10 +46,7 @@ public class MainActivity extends AppCompatActivity {
         String curMonth = curD.substring(4,7);
         String curDate = curD.substring(8,10);
         String curYear = curD.substring(29,34);
-        if(curDate.equals(Date)&&curMonth.equals(Month)&&curYear.equals(Year)){
-            return  true;
-        }
-        return false;
+        return curDate.equals(Date) && curMonth.equals(Month) && curYear.equals(Year);
     }
 
     public void getData(){
@@ -55,26 +56,27 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            int c = 0;
+                            count=1;
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                int count = task.getResult().size();
-                                String ms = Integer.toString(count);
-                                Fname = document.get("FirstName").toString();
-                                Lname = document.get("LastName").toString();
-                                number = Objects.requireNonNull(document.get("Number")).toString();
-                                String tm = document.get("addedOn").toString();
-
-                                if(isTodaysData(tm)){
-                                    Toast.makeText(MainActivity.this, Fname+"  "+Lname+" Added to Contacts", Toast.LENGTH_SHORT).show();
-//                                    try {
-//                                        testBatchInsertion();
-//                                    } catch (RemoteException | OperationApplicationException e) {
-//                                        e.printStackTrace();
-//                                    }
+                                cres = task.getResult().size();
+                                progressBar.setMax(cres);
+                                progressBar.setProgress(count);
+                                if(count==cres){
+                                    progressText.setText("All Contacts Synced");
                                 }
-                                c++;
-                                progress.setText(getProgress(c,count) + "%");
-                                Toast.makeText(MainActivity.this, getProgress(c,count) + "%", Toast.LENGTH_SHORT).show();
+                                firstName = Objects.requireNonNull(document.get("FirstName")).toString();
+                                lastName = Objects.requireNonNull(document.get("LastName")).toString();
+                                number = Objects.requireNonNull(document.get("Number")).toString();
+                                String tm = Objects.requireNonNull(document.get("addedOn")).toString();
+
+                                if(isTodayData(tm)){
+                                        try {
+                                            testBatchInsertion();
+                                        } catch (RemoteException | OperationApplicationException e) {
+                                            e.printStackTrace();
+                                        }
+                                }
+                                count++;
                             }
                         } else {
                             Toast.makeText(MainActivity.this, "Error Getting Data", Toast.LENGTH_SHORT).show();
@@ -85,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void testBatchInsertion() throws RemoteException, OperationApplicationException {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-            generateSampleProviderOperation(ops,Fname,Lname,number);
+            generateSampleProviderOperation(ops, firstName, lastName,number);
                 this.getContentResolver().applyBatch(ContactsContract.AUTHORITY,ops);
 //                ops.clear();
     }
-    private void generateSampleProviderOperation(ArrayList<ContentProviderOperation> ops,String Fname,String Lname,String number){
+    private void generateSampleProviderOperation(ArrayList<ContentProviderOperation> ops,String firstName,String lastName,String number){
         int backReference = ops.size();
         ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
@@ -100,8 +102,8 @@ public class MainActivity extends AppCompatActivity {
         ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, backReference)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, Fname)
-                .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, Lname)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, firstName)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, lastName)
                 .build()
         );
             ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
@@ -114,6 +116,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void removeContact(){
+        String whereClause = ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME+" = '"+"*'";
+        getContentResolver().delete(ContactsContract.Data.CONTENT_URI,whereClause,null);
+        removeContact1();
+    }
+    public void removeContact1(){
+//        String whereClause = ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY+" = '"+"*'";
+        getContentResolver().delete(ContactsContract.RawContacts.CONTENT_URI,null,null);
+    }
+
 
 
     @Override
@@ -122,8 +134,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         sync_btn = findViewById(R.id.sync_btn);
         del_btn = findViewById(R.id.del_btn);
-        progress = findViewById(R.id.progress);
-
+        progressText = findViewById(R.id.progressText);
+        progressBar = findViewById(R.id.progressbar);
+        progressBar.setProgress(0);
+        PERMISSIONS = new String[] {
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.WRITE_CONTACTS,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NETWORK_STATE
+        };
         sync_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         del_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                removeContact();
             }
         });
     }
