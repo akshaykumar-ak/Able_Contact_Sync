@@ -1,11 +1,16 @@
 package com.example.ablecontactsync;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.ContentProviderOperation;
+import android.content.Context;
 import android.content.OperationApplicationException;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
@@ -34,6 +39,41 @@ public class MainActivity extends AppCompatActivity {
     TextView progressText;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     String[] PERMISSIONS;
+
+
+    private boolean hasPermissions(Context context, String... PERMISSIONS) {
+
+        if (context != null && PERMISSIONS != null) {
+
+            for (String permission: PERMISSIONS){
+
+                if (ActivityCompat.checkSelfPermission(context,permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Contact Read Permission is granted", Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(this, "Contact Read Permission is denied", Toast.LENGTH_SHORT).show();
+            }
+
+            if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Contact Write Permission is granted", Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(this, "Contact Write Permission is denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     public boolean isTodayData(String dt){
         String ml = dt.substring(18,28);
@@ -89,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
             generateSampleProviderOperation(ops, firstName, lastName,number);
                 this.getContentResolver().applyBatch(ContactsContract.AUTHORITY,ops);
-//                ops.clear();
     }
     private void generateSampleProviderOperation(ArrayList<ContentProviderOperation> ops,String firstName,String lastName,String number){
         int backReference = ops.size();
@@ -131,10 +170,16 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.WRITE_CONTACTS,
         };
+
+
         sync_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getData();
+                if(!hasPermissions(MainActivity.this,PERMISSIONS)){
+                    ActivityCompat.requestPermissions(MainActivity.this,PERMISSIONS,1);
+                }else if (hasPermissions(MainActivity.this,PERMISSIONS)){
+                    getData();
+                }
             }
         });
         
