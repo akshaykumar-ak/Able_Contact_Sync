@@ -116,16 +116,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void removeContact(){
-        String whereClause = ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME+" = '"+"*'";
-        getContentResolver().delete(ContactsContract.Data.CONTENT_URI,whereClause,null);
-        removeContact1();
-    }
-    public void removeContact1(){
-//        String whereClause = ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY+" = '"+"*'";
-        getContentResolver().delete(ContactsContract.RawContacts.CONTENT_URI,null,null);
-    }
-
 
 
     @Override
@@ -140,8 +130,6 @@ public class MainActivity extends AppCompatActivity {
         PERMISSIONS = new String[] {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.WRITE_CONTACTS,
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NETWORK_STATE
         };
         sync_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         del_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                removeContact();
+                Toast.makeText(MainActivity.this, "Not Yet Implemented", Toast.LENGTH_SHORT).show();
             }
         });
     }
